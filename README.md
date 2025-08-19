@@ -1,40 +1,37 @@
-Extrema Lab
+# **Extrema Lab**
 
-Extrema Lab is a modular Python framework developed by Extrema Intelligence for quantitative trading research, strategy development, and performance analysis. It supports the full lifecycle of quantitative strategies—from high-quality data management to feature engineering, model training, backtesting, deployment, and performance evaluation. The framework emphasizes reproducibility, scalability, and low-latency execution, making it suitable for both research and production environments.
+Extrema Lab is a modular Python framework for quantitative trading research, strategy development, and performance analysis. It is designed to handle the full lifecycle of quantitative strategies—from high-quality data management to feature engineering, model training, backtesting, deployment, and performance evaluation. The framework emphasizes reproducibility, scalability, and low-latency execution, making it suitable for both research and production environments.
 
-Table of Contents
+---
 
-Overview
+## **Table of Contents**
 
-Project Structure
+1. [Overview](#overview)
+2. [Project Structure](#project-structure)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Pipeline Modules](#pipeline-modules)
+6. [Contributing](#contributing)
+7. [License](#license)
 
-Installation
+---
 
-Usage
+## **Overview**
 
-Pipeline Modules
+Extrema Lab provides a structured workflow for quantitative research:
 
-Contributing
+* **Data Management & Curation**: Collect, clean, preprocess, and standardize raw market data from multiple sources.
+* **Feature Engineering**: Extract meaningful signals from processed data and build a reusable feature library.
+* **Model Building & Training**: Train machine learning and deep learning models, including hierarchical reinforcement learning agents, using robust and reproducible methodologies.
+* **Backtesting & Validation**: Evaluate strategy performance under various historical and simulated market conditions to assess robustness and avoid overfitting.
+* **Deployment & Production Optimization**: Integrate validated strategies into production systems, optimizing for low-latency execution and stability.
+* **Performance Analysis & Reporting**: Continuously monitor live strategies, analyze returns and risk, and provide actionable insights for strategy improvement.
 
-License
+---
 
-Overview
+## **Project Structure**
 
-Extrema Lab provides a structured workflow for quantitative research under Extrema Intelligence's methodology:
-
-Data Management & Curation: Collect, clean, preprocess, and standardize raw market data from multiple sources.
-
-Feature Engineering: Extract meaningful predictive signals and build a reusable feature library.
-
-Model Building & Training: Train machine learning and deep learning models, including hierarchical reinforcement learning agents, using robust and reproducible methodologies.
-
-Backtesting & Validation: Evaluate strategy performance across historical and simulated market conditions to ensure robustness and minimize overfitting.
-
-Deployment & Production Optimization: Integrate validated strategies into production systems with low-latency, high-stability execution.
-
-Performance Analysis & Reporting: Monitor live strategies, analyze returns and risk, and provide actionable insights for continuous optimization.
-
-Project Structure
+```
 extrema_lab/
 │
 ├── config/                     # Configuration files for each module
@@ -52,29 +49,39 @@ extrema_lab/
 ├── logs/                       # Logs
 ├── outputs/                    # Reports and results
 └── tests/                      # Unit and integration tests
+```
 
-Installation
+---
 
-Clone the repository:
+## **Installation**
 
+**Clone the repository**:
+
+```bash
 git clone https://github.com/extrema-intelligence/extrema_lab.git
 cd extrema_lab
+```
 
+**Create Conda environment**:
 
-Create Conda environment:
-
+```bash
 conda env create -f environment.yml
 conda activate EI_Lab
+```
 
+**Or using pip**:
 
-Or using pip:
-
+```bash
 pip install -r requirements.txt
+```
 
-Usage
+---
+
+## **Usage**
 
 Run each stage of the pipeline using the corresponding script:
 
+```bash
 # Data acquisition and preprocessing
 python scripts/run_data.py
 
@@ -92,59 +99,67 @@ python scripts/run_deploy.py
 
 # Performance analysis
 python scripts/run_analysis.py
+```
 
+You can also import core modules for interactive research in Jupyter notebooks:
 
-Interactive usage in Jupyter notebooks:
-
+```python
 from extrema_lab.data import acquisition, cleaning
 from extrema_lab.features import builder, selector
 from extrema_lab.models import trainer
+```
 
-Pipeline Modules
-1. Data Management & Curation
+---
 
-Ensure data quality, consistency, and usability for all downstream processes.
+## **Pipeline Modules**
 
-2. Feature Engineering
+### **1. Data Management & Curation**
 
-Transform raw data into predictive signals and maintain a reusable feature library.
+* Collect, clean, standardize, and store raw market data.
+* Ensure high data quality for downstream modeling and backtesting.
 
-3. Model Building & Training
+### **2. Feature Engineering**
 
-Train supervised and reinforcement learning models, including hierarchical DRL.
+* Extract predictive features and construct a reusable feature library.
+* Apply market microstructure insights to transform raw data into actionable signals.
 
-Apply hyperparameter optimization, regularization, and robust validation.
+### **3. Model Building & Training**
 
-4. Backtesting & Validation
+* Train supervised and reinforcement learning models.
+* Support hierarchical DRL, XGBoost, TabNet, LSTM, and other architectures.
+* Implement hyperparameter optimization, regularization, and validation.
 
-Assess strategy robustness with historical, stress, and Monte Carlo scenarios.
+### **4. Backtesting & Validation**
 
-Quantify potential backtest overfitting and risk.
+* Evaluate strategy robustness across historical and simulated scenarios.
+* Conduct overfitting assessment, stress tests, and Monte Carlo simulations.
 
-5. Deployment & Production Optimization
+### **5. Deployment & Production Optimization**
 
-Integrate strategies into production environments with optimized performance and reliability.
+* Integrate strategies into production systems.
+* Optimize for low latency, high stability, and resource efficiency.
+* Monitor strategy execution and system health.
 
-Monitor execution, latency, and system health continuously.
+### **6. Performance Analysis & Reporting**
 
-6. Performance Analysis & Reporting
+* Track live and historical strategy performance.
+* Provide metrics, visualization, and risk-return attribution for decision support.
 
-Track live and historical strategy performance.
+---
 
-Provide risk-return attribution, visualization, and actionable insights for optimization.
+## **Contributing**
 
-Contributing
+We welcome contributions from the community. Please follow these guidelines:
 
-We welcome contributions under Extrema Intelligence's research and development guidelines:
+* Fork the repository
+* Create a feature branch
+* Write unit tests for new functionality
+* Submit a pull request with clear description and references
 
-Fork the repository
+---
 
-Create a feature branch
+## **License**
 
-Write unit tests for new functionality
+MIT License © **Extrema Intelligence**
 
-Submit a pull request with a clear description
-
-License
-
-MIT License © Extrema Intelligence
+---
