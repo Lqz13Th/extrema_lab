@@ -19,6 +19,10 @@ env/
 .DS_Store
 Thumbs.db
 
+resampled_data/
+merged_alt_data/
+binance_data/
+datas/
 data/
 *.csv
 *.parquet

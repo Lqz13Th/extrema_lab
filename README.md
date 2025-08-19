@@ -7,12 +7,11 @@ Extrema Lab is a modular Python framework for quantitative trading research, str
 ## **Table of Contents**
 
 1. [Overview](#overview)
-2. [Project Structure](#project-structure)
-3. [Installation](#installation)
-4. [Usage](#usage)
-5. [Pipeline Modules](#pipeline-modules)
-6. [Contributing](#contributing)
-7. [License](#license)
+2. [Installation](#installation)
+3. [Usage](#usage)
+4. [Pipeline Modules](#pipeline-modules)
+5. [Contributing](#contributing)
+6. [License](#license)
 
 ---
 
@@ -26,30 +25,6 @@ Extrema Lab provides a structured workflow for quantitative research:
 * **Backtesting & Validation**: Evaluate strategy performance under various historical and simulated market conditions to assess robustness and avoid overfitting.
 * **Deployment & Production Optimization**: Integrate validated strategies into production systems, optimizing for low-latency execution and stability.
 * **Performance Analysis & Reporting**: Continuously monitor live strategies, analyze returns and risk, and provide actionable insights for strategy improvement.
-
----
-
-## **Project Structure**
-
-```
-extrema_lab/
-│
-├── config/                     # Configuration files for each module
-├── data/                       # Raw, processed, and feature data
-├── extrema_lab/                # Core Python package
-│   ├── data/                   # Data acquisition & preprocessing
-│   ├── features/               # Feature engineering
-│   ├── models/                 # Model building & training
-│   ├── backtest/               # Backtesting & validation
-│   ├── deployment/             # Strategy deployment & execution
-│   ├── analysis/               # Performance analysis & reporting
-│   └── utils/                  # Shared utilities and helpers
-├── scripts/                    # Entry-point scripts for each module
-├── notebooks/                  # Jupyter notebooks for research
-├── logs/                       # Logs
-├── outputs/                    # Reports and results
-└── tests/                      # Unit and integration tests
-```
 
 ---
 
@@ -104,9 +79,9 @@ python scripts/run_analysis.py
 You can also import core modules for interactive research in Jupyter notebooks:
 
 ```python
-from extrema_lab.data import acquisition, cleaning
-from extrema_lab.features import builder, selector
-from extrema_lab.models import trainer
+from data_proc import acquisition, cleaning
+from feature_eng import builder, selector
+from model_dev import trainer
 ```
 
 ---
