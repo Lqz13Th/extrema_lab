@@ -73,7 +73,8 @@ def read_all_parquets(folder: Path, prefix: str, time_col: str) -> pl.DataFrame:
 
 
 def process_symbol(base_dir, output_dir, symbol: str):
-    um_symbol = symbol + "T"
+    um_symbol = symbol if symbol.endswith("T") else symbol + "T"
+
     metric_folder = base_dir / "metrics" / symbol
     funding_folder = base_dir / "funding_rates" / um_symbol
     premium_folder = base_dir / "premium_index_klines" / um_symbol

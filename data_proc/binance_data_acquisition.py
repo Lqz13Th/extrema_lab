@@ -202,7 +202,7 @@ if __name__ == "__main__":
     with open("../symbols.json", "r", encoding="utf-8") as f:
         symbols_list = json.load(f)
 
-    start_data_str = "2025-01-01"
+    start_date_str = "2025-01-01"
     end_date_str = "2025-07-31"
     concurrency_numbs = 50
 
@@ -212,7 +212,7 @@ if __name__ == "__main__":
         market=FuturesMarket.CM,
         data_type=DataType.METRICS,
         freq=Frequency.DAILY,
-        start_date=start_data_str,
+        start_date=start_date_str,
         end_date=end_date_str,
         output_dir="./binance_data/metrics",
         kline_period=None,
@@ -228,7 +228,7 @@ if __name__ == "__main__":
         market=FuturesMarket.UM,
         data_type=DataType.FUNDING_RATE,
         freq=Frequency.MONTHLY,
-        start_date=start_data_str,
+        start_date=start_date_str,
         end_date=end_date_str,
         output_dir="./binance_data/funding_rates",
         kline_period=None,
@@ -241,7 +241,7 @@ if __name__ == "__main__":
         market=FuturesMarket.UM,
         data_type=DataType.PREMIUM_INDEX_KLINES,
         freq=Frequency.MONTHLY,
-        start_date=start_data_str,
+        start_date=start_date_str,
         end_date=end_date_str,
         output_dir="./binance_data/premium_index_klines",
         kline_period='15m',
@@ -254,7 +254,7 @@ if __name__ == "__main__":
         market=FuturesMarket.UM,
         data_type=DataType.AGG_TRADES,
         freq=Frequency.DAILY,
-        start_date=start_data_str,
+        start_date=start_date_str,
         end_date=end_date_str,
         output_dir="./binance_data/aggregate_trades",
         kline_period=None,

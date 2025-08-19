@@ -1,5 +1,4 @@
 import os
-import numpy as np
 
 from datetime import datetime, timedelta
 
@@ -110,7 +109,6 @@ def data_resampling(
             rolling_window=rolling_window,
         )
 
-
 def merge_all_datas_for_symbol(
         symbol: str,
         dates_list: list,
@@ -149,7 +147,7 @@ def merge_all_datas_for_symbol(
 
     output_filename = f"{symbol}_merged_thr{threshold}_roll{rolling_window}.parquet"
     output_path = os.path.join(output_dir, output_filename)
-    merged_df.write_csv(output_path)
+    merged_df.write_parquet(output_path)
     print(f"{symbol} merged, {merged_df.shape[0]} row, saved to: {output_path}")
 
 def generate_pct_bar(
@@ -169,7 +167,7 @@ def generate_pct_bar(
         px = row['trades_price']
 
         sz = row['trades_quantity']
-        side = -1 if row['trades_is_buyer_maker'] == True else 1  # 卖方主导为 -1，买方主导为 1
+        side = -1 if row['trades_is_buyer_maker'] == True else 1
         px_pct = (px - last_px) / last_px
         if side == 1:
             sum_buy_size += sz
@@ -210,7 +208,7 @@ if __name__ == "__main__":
     with open("../symbols.json", "r", encoding="utf-8") as f:
         symbols_list = json.load(f)
 
-    symbols_list_usdt = [s + "T" for s in symbols_list]
+    symbols_list_usdt = [s if s.endswith("T") else s + "T" for s in symbols_list]
     symbols_list_usdt = ["BTCUSDT"]
     data_resampling(
         start_date="2025_01_01",
@@ -219,5 +217,5 @@ if __name__ == "__main__":
         rolling_window=500,
         output_dir=OUTPUT_DIR,
         target_instruments=symbols_list_usdt,
-        resample=True,
+        resample=False,
     )

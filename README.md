@@ -58,10 +58,10 @@ Run each stage of the pipeline using the corresponding script:
 
 ```bash
 # Data acquisition and preprocessing
-python scripts/run_data.py
+python data_proc/data_automation.py
 
 # Feature engineering
-python scripts/run_features.py
+python feature_eng/feat_automation.py
 
 # Model training
 python scripts/run_train.py
@@ -79,9 +79,8 @@ python scripts/run_analysis.py
 You can also import core modules for interactive research in Jupyter notebooks:
 
 ```python
-from data_proc import acquisition, cleaning
-from feature_eng import builder, selector
-from model_dev import trainer
+from data_proc import data_automation
+from feature_eng import feat_automation
 ```
 
 ---
