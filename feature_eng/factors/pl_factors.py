@@ -1,4 +1,5 @@
 from ..operator.pl_operators import *
+from polars import functions as F
 
 EPSILON = 1e-8
 
@@ -205,6 +206,23 @@ def alt_tick_composite_factors() -> List[Expr]:
         .alias("factor_order_sentiment_divergence"),
     ]
 
+
+def oi_px_correlation_factors(price_col: str, oi_value_col: str, window: int = 100) -> List[Expr]:
+    corr_expr = (
+        F.rolling_corr(price_col, oi_value_col, window_size=window, min_samples=1)
+        .fill_null(0)
+        .alias(f"corr_{price_col}_{oi_value_col}_{window}")
+    )
+
+    z_signal_expr = (
+        pl.when(corr_expr > -0.7)
+        .then(1)
+        .otherwise(0)
+        .alias(f"z_signal_{price_col}_{oi_value_col}_{window}")
+    )
+
+    return [corr_expr, z_signal_expr]
+
 def cal_factors_with_sampled_data(
         input_df: pl.DataFrame,
         window: int,
@@ -286,9 +304,17 @@ def cal_factors_with_sampled_data(
         .with_columns(
             alt_tick_composite_factors(),
         )
+        .with_columns(
+            oi_px_correlation_factors("px", "oi_sum_open_interest_value", window),
+        )
         .with_columns([
             z_score_expr("factor_order_momentum_divergence", window),
             z_score_expr("factor_order_sentiment_divergence", window),
+            z_score_expr(f"corr_px_oi_sum_open_interest_value_{window}", window),
+        ])
+        .with_columns([
+            (pl.col(f"z_px_pct_rol_sum_{window}") * pl.col(f"z_signal_px_oi_sum_open_interest_value_{window}"))
+            .alias("z_px_oi_corr_activation")
         ])
         .with_columns(
             risk_factor_expr("px", window),

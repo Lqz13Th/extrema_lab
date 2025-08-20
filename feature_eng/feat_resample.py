@@ -205,11 +205,11 @@ if __name__ == "__main__":
         symbols_list = json.load(f)
 
     symbols_list_usdt = [s if s.endswith("T") else s + "T" for s in symbols_list]
-    symbols_list_usdt = ["BTCUSDT"]
+    symbols_list_usdt = ["ETHUSDT"]
     data_resampling(
         start_date="2024-07-01",
         end_date="2025-07-31",
-        threshold=0.0031,
+        threshold=0.0067,
         output_dir=OUTPUT_DIR,
         target_instruments=symbols_list_usdt,
         resample=True,

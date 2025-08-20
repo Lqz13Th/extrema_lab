@@ -154,6 +154,8 @@ def trend_matrix_expr(col: str, window: int) -> List[Expr]:
         (pl.col(col) - rolling_min).alias(f"{col}_rebound"),
     ]
 
+
+
 def cols_to_transforms(
         df: pl.DataFrame,
         exclude_cols: List[str] = None
