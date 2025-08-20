@@ -33,7 +33,7 @@ Extrema Lab provides a structured workflow for quantitative research:
 **Clone the repository**:
 
 ```bash
-git clone https://github.com/extrema-intelligence/extrema_lab.git
+git clone https://github.com/Lqz13Th/extrema_lab.git
 cd extrema_lab
 ```
 
@@ -62,18 +62,6 @@ python data_proc/data_automation.py
 
 # Feature engineering
 python feature_eng/feat_automation.py
-
-# Model training
-python scripts/run_train.py
-
-# Backtesting
-python scripts/run_backtest.py
-
-# Deployment
-python scripts/run_deploy.py
-
-# Performance analysis
-python scripts/run_analysis.py
 ```
 
 You can also import core modules for interactive research in Jupyter notebooks:

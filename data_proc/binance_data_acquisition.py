@@ -202,7 +202,8 @@ if __name__ == "__main__":
     with open("../symbols.json", "r", encoding="utf-8") as f:
         symbols_list = json.load(f)
 
-    start_date_str = "2025-01-01"
+    symbols_list = ["BTCUSD", "ETHUSD"]
+    start_date_str = "2022-01-01"
     end_date_str = "2025-07-31"
     concurrency_numbs = 50
 

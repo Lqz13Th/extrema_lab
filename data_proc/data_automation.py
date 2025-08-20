@@ -3,7 +3,10 @@ from datetime import date
 from data_proc.alt_data_preprocessing import *
 from data_proc.binance_data_acquisition import *
 
-def data_auto_process(init_date: str):
+def data_auto_process(
+        data_init_date: str,
+        concurrency_numbs_automation: int = 100
+):
     with open("../symbols.json", "r", encoding="utf-8") as f_automation:
         symbols_automation_list = json.load(f_automation)
 
@@ -19,15 +22,15 @@ def data_auto_process(init_date: str):
         market=FuturesMarket.CM,
         data_type=DataType.METRICS,
         freq=Frequency.DAILY,
-        start_date=init_date,
+        start_date=data_init_date,
         end_date=last_month_end_date_str,
         output_dir="./binance_data/metrics",
         kline_period=None,
-        concurrency=concurrency_numbs,
+        concurrency=concurrency_numbs_automation,
     ))
 
 
-    symbols_automation_list_usdt = [s + "T" for s in symbols_list]
+    symbols_automation_list_usdt = [s + "T" for s in symbols_automation_list]
 
     # download funding rates
     asyncio.run(download_binance_data_async(
@@ -35,11 +38,11 @@ def data_auto_process(init_date: str):
         market=FuturesMarket.UM,
         data_type=DataType.FUNDING_RATE,
         freq=Frequency.MONTHLY,
-        start_date=init_date,
+        start_date=data_init_date,
         end_date=last_month_end_date_str,
         output_dir="./binance_data/funding_rates",
         kline_period=None,
-        concurrency=concurrency_numbs,
+        concurrency=concurrency_numbs_automation,
     ))
 
     # download premium index klines
@@ -48,11 +51,11 @@ def data_auto_process(init_date: str):
         market=FuturesMarket.UM,
         data_type=DataType.PREMIUM_INDEX_KLINES,
         freq=Frequency.MONTHLY,
-        start_date=init_date,
+        start_date=data_init_date,
         end_date=last_month_end_date_str,
         output_dir="./binance_data/premium_index_klines",
         kline_period='15m',
-        concurrency=concurrency_numbs,
+        concurrency=concurrency_numbs_automation,
     ))
 
     # download aggregate trades
@@ -61,11 +64,11 @@ def data_auto_process(init_date: str):
         market=FuturesMarket.UM,
         data_type=DataType.AGG_TRADES,
         freq=Frequency.DAILY,
-        start_date=init_date,
-        end_date=end_date_str,
+        start_date=data_init_date,
+        end_date=last_month_end_date_str,
         output_dir="./binance_data/aggregate_trades",
         kline_period=None,
-        concurrency=concurrency_numbs,
+        concurrency=concurrency_numbs_automation,
     ))
 
     base_automation_dir = Path("binance_data")
@@ -76,4 +79,4 @@ def data_auto_process(init_date: str):
         process_symbol(base_automation_dir, output_automation_dir, sym_automation)
 
 if __name__ == "__main__":
-    data_auto_process(init_date="2025-01-01")
+    data_auto_process(data_init_date="2024-06-01")

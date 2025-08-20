@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from feature_eng.feat_alt_cal import *
 
 def generate_dates(start_date_str: str, end_date_str: str):
-    start_date = datetime.strptime(start_date_str, "%Y_%m_%d")
-    end_date = datetime.strptime(end_date_str, "%Y_%m_%d")
+    start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
 
     dates = []
 
@@ -22,7 +22,6 @@ def data_resampling(
     start_date: str,
     end_date: str,
     threshold: float,
-    rolling_window: int,
     output_dir: str,
     target_instruments: list,
     delay_minutes: int = 5,
@@ -106,7 +105,6 @@ def data_resampling(
             input_dir=output_dir,
             output_dir=output_dir,
             threshold=threshold,
-            rolling_window=rolling_window,
         )
 
 def merge_all_datas_for_symbol(
@@ -115,7 +113,6 @@ def merge_all_datas_for_symbol(
         input_dir: str,
         output_dir: str,
         threshold: float,
-        rolling_window: int,
 ):
     symbol_folder = os.path.join(input_dir, symbol)
 
@@ -129,7 +126,6 @@ def merge_all_datas_for_symbol(
         fpath = os.path.join(symbol_folder, file_name)
         if os.path.exists(fpath):
             df_to_merge = pl.read_parquet(fpath)
-            print(f"reading files: {fpath}")
             casted_df = df_to_merge.with_columns([
                 pl.col(col_merging).cast(
                     pl.Int64 if col_merging == "timestamp" else
@@ -145,7 +141,7 @@ def merge_all_datas_for_symbol(
 
     merged_df = pl.concat(df_list).sort("timestamp")
 
-    output_filename = f"{symbol}_merged_thr{threshold}_roll{rolling_window}.parquet"
+    output_filename = f"{symbol}_merged_thr{threshold}.parquet"
     output_path = os.path.join(output_dir, output_filename)
     merged_df.write_parquet(output_path)
     print(f"{symbol} merged, {merged_df.shape[0]} row, saved to: {output_path}")
@@ -211,11 +207,19 @@ if __name__ == "__main__":
     symbols_list_usdt = [s if s.endswith("T") else s + "T" for s in symbols_list]
     symbols_list_usdt = ["BTCUSDT"]
     data_resampling(
-        start_date="2025_01_01",
-        end_date="2025_07_31",
-        threshold=0.0013,
-        rolling_window=500,
+        start_date="2024-07-01",
+        end_date="2025-07-31",
+        threshold=0.0031,
         output_dir=OUTPUT_DIR,
         target_instruments=symbols_list_usdt,
-        resample=False,
+        resample=True,
     )
+
+    # df = pl.read_parquet("../data_proc/resampled_data/BNBUSDT/resampled_data_BNBUSDT_2025-07-31_thr0.0067.parquet")
+    # print(df)
+    # df = cal_factors_with_sampled_data(df, 500)
+    # print(df)
+    # for col in df.columns:
+    #     print(f"Column: {col}")
+    #     print(df[col])  # 前5行
+    #     print('-' * 40)

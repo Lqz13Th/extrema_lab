@@ -55,8 +55,4 @@ if __name__ == "__main__":
 
         df = pl.read_parquet(file_path)
         df = alt_factors_cal(df)
-        print(df)
-        for col in df.columns:
-            print(f"Column: {col}")
-            print(df[col])  # 前5行
-            print('-' * 40)
+

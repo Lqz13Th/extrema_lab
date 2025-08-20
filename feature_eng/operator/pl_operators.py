@@ -12,7 +12,7 @@ def rolling_z_tanh_normalize(
 ) -> pl.DataFrame:
     columns_to_normalize = [
         col for col in rollin_df.columns
-        if col not in ['px', 'timestamp', 'timestamp_dt', 'symbol']
+        if col not in ['px', 'timestamp', 'timestamp_dt', 'symbol', 'funding_funding_interval_hours']
            and not col.startswith("future_return")
            and not col.endswith('scaled')
     ]
@@ -75,7 +75,6 @@ def rolling_std_expr(col: str, window: int) -> Expr:
 def rolling_sum_expr(col: str, window: int) -> Expr:
     return pl.col(col).rolling_sum(window, min_samples=1).alias(f"{col}_sum_{window}")
 
-
 def rolling_pct_change_std_expr(col: str, window: int) -> Expr:
     return (
         pl.col(col)
@@ -85,7 +84,7 @@ def rolling_pct_change_std_expr(col: str, window: int) -> Expr:
         .alias(f"{col}_pct_change_std_{window}")
     )
 
-def rolling_pct_change_sum_expr(col: str, window: int) -> pl.Expr:
+def rolling_pct_change_sum_expr(col: str, window: int) -> Expr:
     return (
         pl.col(col)
         .pct_change()
@@ -140,6 +139,20 @@ def atr_expr(col: str, high: str, low: str, close: str, window: int) -> Expr:
         (pl.col(low) - pl.col(close).shift(1)).abs()
     ])
     return tr.rolling_mean(window, min_samples=1).alias(f"{col}_atr_{window}")
+
+def risk_factor_expr(col: str, window: int) -> Expr:
+    return (
+        (pl.col(col).rolling_std(window, min_samples=1) / pl.col(col).rolling_mean(window, min_samples=1) * 1000.0)
+        .alias(f"{col}_risk_factor")
+    )
+
+def trend_matrix_expr(col: str, window: int) -> List[Expr]:
+    rolling_max = pl.col(col).rolling_max(window, min_samples=1)
+    rolling_min = pl.col(col).rolling_min(window, min_samples=1)
+    return [
+        (rolling_max - pl.col(col)).alias(f"{col}_drawdown"),
+        (pl.col(col) - rolling_min).alias(f"{col}_rebound"),
+    ]
 
 def cols_to_transforms(
         df: pl.DataFrame,
@@ -204,20 +217,10 @@ def batch_apply_transforms(
         df_to_transforms: pl.DataFrame,
         window: int,
         lags,
-        log1p_cols: List[str] = None,
         exclude_cols: List[str] = None,
 ) -> pl.DataFrame:
     if exclude_cols is None:
         exclude_cols = ['px', 'timestamp', 'timestamp_dt', 'symbol']
-
-    if log1p_cols is None:
-        log1p_cols = []
-
-    for col in log1p_cols:
-        if col in df_to_transforms.columns:
-            df_to_transforms = df_to_transforms.with_columns([
-                pl.col(col).clip(lower_bound=0.0).log1p().alias(col)
-            ])
 
     base_cols = cols_to_transforms(df_to_transforms, exclude_cols)
 
