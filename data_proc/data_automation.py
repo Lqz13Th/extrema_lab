@@ -79,4 +79,4 @@ def data_auto_process(
         process_symbol(base_automation_dir, output_automation_dir, sym_automation)
 
 if __name__ == "__main__":
-    data_auto_process(data_init_date="2024-06-01")
+    data_auto_process(data_init_date="2024-10-01")

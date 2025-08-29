@@ -19,6 +19,7 @@ env/
 .DS_Store
 Thumbs.db
 
+saved_models/
 resampled_data/
 merged_alt_data/
 binance_data/

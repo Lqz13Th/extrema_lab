@@ -6,12 +6,12 @@ EPSILON = 1e-8
 
 
 def rolling_z_tanh_normalize(
-    rollin_df: pl.DataFrame,
+    rollin_df: pl.LazyFrame,
     window: int,
     rolling_mean_window: int,
-) -> pl.DataFrame:
+) -> pl.LazyFrame:
     columns_to_normalize = [
-        col for col in rollin_df.columns
+        col for col in rollin_df.collect_schema().names()
         if col not in ['px', 'timestamp', 'timestamp_dt', 'symbol', 'funding_funding_interval_hours']
            and not col.startswith("future_return")
            and not col.endswith('scaled')

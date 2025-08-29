@@ -1,8 +1,13 @@
 import gc
 import os
 import numpy as np
-
+import pandas as pd
 from tqdm import tqdm
+
+from collections import defaultdict
+from typing import Dict
+
+
 from ..factors.pl_factors import *
 
 def split_df_by_month(
@@ -41,31 +46,59 @@ def split_df_by_week(
     ]
     return weekly_dfs
 
+def safe_fillna(filling_df):
+    if isinstance(filling_df, pd.DataFrame) or isinstance(filling_df, pd.Series):
+        return filling_df.replace([np.inf, -np.inf], np.nan).fillna(0.0)
+    elif isinstance(filling_df, np.ndarray):
+        filling_df = np.where(np.isfinite(filling_df), filling_df, 0.0)
+        return filling_df
+    else:
+        raise TypeError(f"Unsupported type: {type(filling_df)}")
+
+def safe_fillna_polars(df: pl.DataFrame) -> pl.DataFrame:
+    num_cols = [c for c, dt in zip(df.columns, df.dtypes) if dt.is_numeric()]
+    if not num_cols:
+        return df
+
+    return (
+        df.with_columns([
+            pl.col(num_cols)
+            .fill_nan(0.0)         # NaN → 0
+            .fill_null(0.0)        # Null → 0
+            .map_elements(
+                lambda x: 0.0 if x == float("inf") or x == float("-inf") else x,
+                return_dtype=pl.Float64
+            )
+        ])
+    )
+
+
 def clean_df_drop_nulls(
         df_to_clean: pl.DataFrame,
         null_threshold: int = 500000,
         verbose: bool = True
 ) -> pl.DataFrame:
-    pd_df = df_to_clean.to_pandas()
+    pd_df = safe_fillna_polars(df_to_clean)
+    pd_df = pd_df.to_pandas()
     del df_to_clean
     gc.collect()
-    print("converted")
+    print("Converted Polars DataFrame to Pandas")
 
     null_counts = pd_df.isnull().sum()
     cols_to_drop = null_counts[null_counts > null_threshold].index
     pd_df_cleaned = pd_df.drop(columns=cols_to_drop)
     if verbose:
-        print("各列空值数量：")
+        print("Null counts per column:")
         print(null_counts[null_counts > 0])
-        print(f"删除空值超过 {null_threshold} 的列：{list(cols_to_drop)}")
-        print(f"删除列后，DataFrame形状：{pd_df_cleaned.shape}")
+        print(f"Dropping columns with nulls greater than {null_threshold}: {list(cols_to_drop)}")
+        print(f"Shape after dropping columns: {pd_df_cleaned.shape}")
 
     del pd_df
     gc.collect()
 
     pd_df_clean = pd_df_cleaned.dropna()
     if verbose:
-        print(f"删除空值行后，DataFrame形状：{pd_df_clean.shape}")
+        print(f"Shape after dropping rows with nulls: {pd_df_clean.shape}")
 
     del pd_df_cleaned
     gc.collect()
@@ -106,7 +139,7 @@ def filter_valid_cross_sections(long_df: pl.DataFrame, num_symbols: int) -> pl.D
     )
     return long_df.join(valid_ts, on="timestamp", how="inner")
 
-def build_long_cross_sections_fast(symbol_dfs: dict[str, pl.DataFrame]) -> pl.DataFrame:
+def build_long_cross_sections_fast(symbol_dfs: dict[str, pl.DataFrame], n=1) -> pl.DataFrame:
     all_timestamps = (
         pl.concat(
             [df.select("timestamp").unique() for df in symbol_dfs.values()]
@@ -115,8 +148,10 @@ def build_long_cross_sections_fast(symbol_dfs: dict[str, pl.DataFrame]) -> pl.Da
         .sort("timestamp")
     )
 
+    all_timestamps = all_timestamps[::n]
+
     result_dfs = []
-    for symbol, df in symbol_dfs.items():
+    for symbol, df in tqdm(symbol_dfs.items(), total=len(symbol_dfs), desc="Processing symbols"):
         df_sorted = df.sort("timestamp")
         joined = all_timestamps.join_asof(
             df_sorted,
@@ -129,6 +164,7 @@ def build_long_cross_sections_fast(symbol_dfs: dict[str, pl.DataFrame]) -> pl.Da
     long_df = pl.concat(result_dfs).sort(["timestamp", "symbol"])
     clean_df = filter_valid_cross_sections(long_df, len(symbol_dfs))
     return clean_df
+
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..", "extrema_lab"))
 DATA_DIR = os.path.join(PROJECT_ROOT, "data_proc", "resampled_data") + os.sep
@@ -143,23 +179,22 @@ def process_single_symbol(
 ) -> pl.DataFrame:
     file = f"{symbol}_merged_thr{threshold}.parquet"
     path = os.path.join(data_dir, file)
-    df = pl.read_parquet(path)
+    df = pl.scan_parquet(path)
     df = cal_factors_with_sampled_data(df, feat_cal_window)
     df = rolling_z_tanh_normalize(df, feat_norm_window, feat_norm_rolling_mean_window)
-
-    stds = df.select([
-        pl.col(col).std().alias(col)
-        for col in df.columns
-        if df[col].dtype in (pl.Float64, pl.Int64)
-    ])
+    # stds = df.select([
+    #     pl.col(col).std().alias(col)
+    #     for col in df.columns
+    #     if df[col].dtype in (pl.Float64, pl.Int64)
+    # ])
     # zero_std_cols = [col for col in stds.columns if stds[0, col] == 0.0]
     # print(zero_std_cols)
     # df = df.drop(zero_std_cols)
-    return df
+    return df.collect()
 
 def process_all_symbols(params_dict):
     symbol_dfs = {}
-    for sym, param in params_dict.items():
+    for sym, param in tqdm(params_dict.items(), desc="Processing symbols", total=len(params_dict)):
         df = process_single_symbol(
             symbol=sym,
             threshold=param.get("threshold", "0.002"),

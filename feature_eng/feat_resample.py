@@ -36,68 +36,72 @@ def data_resampling(
 
     dates_list = generate_dates(start_date, end_date)
 
-    for symbol in target_instruments:
-        print(f"Processing instrument: {symbol}")
+    for i, symbol in enumerate(target_instruments, 1):
+        try:
+            print(f"[{i}/{len(target_instruments)}] Processing instrument: {symbol}")
 
-        alt_merged_df = pl.read_parquet(
-            merged_file_template.format(symbol=symbol)
-        )
-        alt_merged_df = alt_factors_cal(alt_merged_df)
+            alt_merged_df = pl.read_parquet(
+                merged_file_template.format(symbol=symbol)
+            )
+            alt_merged_df = alt_factors_cal(alt_merged_df)
 
-        alt_df = alt_merged_df.with_columns(
-            (pl.col("timestamp") + delay_minutes * 60 * 1000 * 1000).alias("timestamp")
-        )
+            alt_df = alt_merged_df.with_columns(
+                (pl.col("timestamp") + delay_minutes * 60 * 1000 * 1000).alias("timestamp")
+            )
 
-        if resample:
-            for date in tqdm(dates_list, desc=f"{symbol} resampling"):
-                agg_trade_df = pl.scan_parquet(agg_trade_file_template.format(symbol=symbol, date=date))
+            if resample:
+                for date in tqdm(dates_list, desc=f"{symbol} resampling"):
+                    agg_trade_df = pl.scan_parquet(agg_trade_file_template.format(symbol=symbol, date=date))
 
-                cols = [col_agg_trade for col_agg_trade in agg_trade_df.collect_schema().names() if col_agg_trade != '']
-                cols_to_cast = [c for c in cols if c not in ["is_buyer_maker"]]
-                agg_trade_df = (
-                    agg_trade_df
-                    .with_columns([
-                        (pl.col("transact_time") * 1000).alias("timestamp")]
+                    cols = [col_agg_trade for col_agg_trade in agg_trade_df.collect_schema().names() if col_agg_trade != '']
+                    cols_to_cast = [c for c in cols if c not in ["is_buyer_maker"]]
+                    agg_trade_df = (
+                        agg_trade_df
+                        .with_columns([
+                            (pl.col("transact_time") * 1000).alias("timestamp")]
+                        )
+                        .with_columns([
+                            pl.col(col_to_cast).cast(
+                                pl.Int64 if col_to_cast == "timestamp" else
+                                pl.Utf8 if col_to_cast == "symbol" else
+                                pl.Float64
+                            ) for col_to_cast in cols_to_cast
+                        ])
+                        .collect()
                     )
-                    .with_columns([
-                        pl.col(col_to_cast).cast(
-                            pl.Int64 if col_to_cast == "timestamp" else
-                            pl.Utf8 if col_to_cast == "symbol" else
-                            pl.Float64
-                        ) for col_to_cast in cols_to_cast
-                    ])
-                    .collect()
-                )
 
-                ts_min = agg_trade_df['timestamp'].min() - 1 * 1000 * 1000
-                ts_max = agg_trade_df['timestamp'].max()
+                    ts_min = agg_trade_df['timestamp'].min() - 1 * 1000 * 1000
+                    ts_max = agg_trade_df['timestamp'].max()
 
-                daily_df = alt_df.filter(
-                    (pl.col("timestamp") >= ts_min) &
-                    (pl.col("timestamp") <= ts_max)
-                )
+                    daily_df = alt_df.filter(
+                        (pl.col("timestamp") >= ts_min) &
+                        (pl.col("timestamp") <= ts_max)
+                    )
 
-                if daily_df.is_empty():
-                    continue
+                    if daily_df.is_empty():
+                        continue
 
 
-                feat_merged_df = merge_dataframes_on_timestamp(
-                    [agg_trade_df, alt_df],
-                    ["trades_", "alt_"]
-                )
+                    feat_merged_df = merge_dataframes_on_timestamp(
+                        [agg_trade_df, alt_df],
+                        ["trades_", "alt_"]
+                    )
 
-                auto_filled_df = auto_fill_dataframes_with_old_data(feat_merged_df).drop_nulls()
-                alt_cols = [c for c in auto_filled_df.columns if c.startswith("alt_")]
+                    auto_filled_df = auto_fill_dataframes_with_old_data(feat_merged_df).drop_nulls()
+                    alt_cols = [c for c in auto_filled_df.columns if c.startswith("alt_")]
 
-                pct_sampled_data = generate_pct_bar(auto_filled_df, alt_cols, threshold)
+                    pct_sampled_data = generate_pct_bar(auto_filled_df, alt_cols, threshold)
 
-                symbol_folder = os.path.join(output_dir, symbol)
-                os.makedirs(symbol_folder, exist_ok=True)
-                output_file_path = os.path.join(
-                    symbol_folder,
-                    f"resampled_data_{symbol}_{date}_thr{threshold}.parquet"
-                )
-                pct_sampled_data.write_parquet(output_file_path)
+                    symbol_folder = os.path.join(output_dir, symbol)
+                    os.makedirs(symbol_folder, exist_ok=True)
+                    output_file_path = os.path.join(
+                        symbol_folder,
+                        f"resampled_data_{symbol}_{date}_thr{threshold}.parquet"
+                    )
+                    pct_sampled_data.write_parquet(output_file_path)
+
+        except Exception as e:
+            print(f"Error processing {symbol}: {e}")
 
         merge_all_datas_for_symbol(
             symbol=symbol,
@@ -126,15 +130,19 @@ def merge_all_datas_for_symbol(
         fpath = os.path.join(symbol_folder, file_name)
         if os.path.exists(fpath):
             df_to_merge = pl.read_parquet(fpath)
+
+            if df_to_merge.is_empty():
+                print(f"[WARNING] {symbol} empty dataframe in file: {fpath} -> shape={df_to_merge.shape}")
+                continue
+
             casted_df = df_to_merge.with_columns([
                 pl.col(col_merging).cast(
-                    pl.Int64 if col_merging == "timestamp" else
-                    pl.Float64
+                    pl.Int64 if col_merging == "timestamp" else pl.Float64
                 ) for col_merging in df_to_merge.columns
             ])
             df_list.append(casted_df)
         else:
-            print(f"file not exist：{fpath}")
+            print(f"[MISSING] file not exist: {fpath}")
 
     if not df_list:
         raise FileNotFoundError("unmatched file")
@@ -205,16 +213,16 @@ if __name__ == "__main__":
         symbols_list = json.load(f)
 
     symbols_list_usdt = [s if s.endswith("T") else s + "T" for s in symbols_list]
-    symbols_list_usdt = ["ETHUSDT"]
+    symbols_list_usdt = ["TRXUSDT"]
     data_resampling(
-        start_date="2024-07-01",
+        start_date="2024-10-01",
         end_date="2025-07-31",
         threshold=0.0067,
         output_dir=OUTPUT_DIR,
         target_instruments=symbols_list_usdt,
-        resample=True,
+        resample=False,
     )
-
+    #
     # df = pl.read_parquet("../data_proc/resampled_data/BNBUSDT/resampled_data_BNBUSDT_2025-07-31_thr0.0067.parquet")
     # print(df)
     # df = cal_factors_with_sampled_data(df, 500)

@@ -6,6 +6,7 @@ def feat_auto_process(
         feat_init_date: str,
         threshold: float = 0.0013,
         resample: bool = True,
+        start_symbol: str | None = None,
 ):
     feat_output_dir = "../data_proc/resampled_data"
 
@@ -19,6 +20,13 @@ def feat_auto_process(
         symbols_automation_list = json.load(f_automation)
 
     symbols_automation_list_usdt = [s if s.endswith("T") else s + "T" for s in symbols_automation_list]
+
+    if  start_symbol and start_symbol in symbols_automation_list_usdt:
+        start_idx = symbols_automation_list_usdt.index(start_symbol)
+        symbols_automation_list_usdt = symbols_automation_list_usdt[start_idx:]
+    else:
+        print(f"{start_symbol} not found in symbol list, running from start.")
+
     data_resampling(
         start_date=feat_init_date,
         end_date=last_month_end_date_str,
@@ -31,5 +39,6 @@ def feat_auto_process(
 if __name__ == "__main__":
     init_date = "2024-10-01"
     # feat_auto_process(feat_init_date=init_date, threshold=0.0013, resample=True)
-    feat_auto_process(feat_init_date=init_date, threshold=0.0031, resample=True)
-    feat_auto_process(feat_init_date=init_date, threshold=0.0067, resample=True)
+    # feat_auto_process(feat_init_date=init_date, threshold=0.0031, resample=True)
+    # feat_auto_process(feat_init_date=init_date, threshold=0.0067, resample=True)
+    feat_auto_process(feat_init_date=init_date, threshold=0.013, resample=True, start_symbol="DOGEUSDT")

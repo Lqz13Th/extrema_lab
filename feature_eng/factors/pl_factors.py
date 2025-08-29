@@ -224,9 +224,9 @@ def oi_px_correlation_factors(price_col: str, oi_value_col: str, window: int = 1
     return [corr_expr, z_signal_expr]
 
 def cal_factors_with_sampled_data(
-        input_df: pl.DataFrame,
+        input_df: pl.LazyFrame,
         window: int,
-) -> pl.DataFrame:
+) -> pl.LazyFrame:
     factors_df = (
         input_df
         .with_columns(
