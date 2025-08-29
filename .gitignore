@@ -1,4 +1,5 @@
 symbol_config.json
+symbols.json
 
 __pycache__/
 *.py[cod]
