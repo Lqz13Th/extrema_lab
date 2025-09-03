@@ -40,5 +40,5 @@ if __name__ == "__main__":
     init_date = "2024-10-01"
     # feat_auto_process(feat_init_date=init_date, threshold=0.0013, resample=True)
     # feat_auto_process(feat_init_date=init_date, threshold=0.0031, resample=True)
-    # feat_auto_process(feat_init_date=init_date, threshold=0.0067, resample=True)
-    feat_auto_process(feat_init_date=init_date, threshold=0.013, resample=True, start_symbol="DOGEUSDT")
+    feat_auto_process(feat_init_date=init_date, threshold=0.0067, resample=True)
+    # feat_auto_process(feat_init_date=init_date, threshold=0.013, resample=True, start_symbol="DOGEUSDT")

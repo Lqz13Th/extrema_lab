@@ -38,6 +38,9 @@ def data_resampling(
 
     for i, symbol in enumerate(target_instruments, 1):
         try:
+            if symbol == "ETHUSDT":
+                continue
+
             print(f"[{i}/{len(target_instruments)}] Processing instrument: {symbol}")
 
             alt_merged_df = pl.read_parquet(
@@ -213,14 +216,32 @@ if __name__ == "__main__":
         symbols_list = json.load(f)
 
     symbols_list_usdt = [s if s.endswith("T") else s + "T" for s in symbols_list]
-    symbols_list_usdt = ["TRXUSDT"]
+    symbols_list_usdt = ["BTCUSDT"]
+    data_resampling(
+        start_date="2024-07-01",
+        end_date="2025-08-31",
+        threshold=0.0031,
+        output_dir=OUTPUT_DIR,
+        target_instruments=symbols_list_usdt,
+        resample=True,
+    )
+    symbols_list_usdt = ["BNBUSDT"]
     data_resampling(
         start_date="2024-10-01",
-        end_date="2025-07-31",
+        end_date="2025-08-31",
+        threshold=0.0031,
+        output_dir=OUTPUT_DIR,
+        target_instruments=symbols_list_usdt,
+        resample=True,
+    )
+    symbols_list_usdt = ["ETHUSDT"]
+    data_resampling(
+        start_date="2024-07-01",
+        end_date="2025-08-31",
         threshold=0.0067,
         output_dir=OUTPUT_DIR,
         target_instruments=symbols_list_usdt,
-        resample=False,
+        resample=True,
     )
     #
     # df = pl.read_parquet("../data_proc/resampled_data/BNBUSDT/resampled_data_BNBUSDT_2025-07-31_thr0.0067.parquet")

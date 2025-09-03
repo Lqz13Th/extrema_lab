@@ -203,9 +203,9 @@ if __name__ == "__main__":
         symbols_list = json.load(f)
 
     symbols_list = ["BTCUSD", "ETHUSD"]
-    start_date_str = "2022-01-01"
-    end_date_str = "2025-07-31"
-    concurrency_numbs = 50
+    start_date_str = "2024-07-01"
+    end_date_str = "2025-08-31"
+    concurrency_numbs = 100
 
     # download USD metrics
     asyncio.run(download_binance_data_async(
@@ -245,7 +245,7 @@ if __name__ == "__main__":
         start_date=start_date_str,
         end_date=end_date_str,
         output_dir="./binance_data/premium_index_klines",
-        kline_period='15m',
+        kline_period='5m',
         concurrency=concurrency_numbs,
     ))
 

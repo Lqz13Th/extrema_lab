@@ -54,7 +54,7 @@ def data_auto_process(
         start_date=data_init_date,
         end_date=last_month_end_date_str,
         output_dir="./binance_data/premium_index_klines",
-        kline_period='15m',
+        kline_period='5m',
         concurrency=concurrency_numbs_automation,
     ))
 
