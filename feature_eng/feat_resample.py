@@ -38,7 +38,7 @@ def data_resampling(
 
     for i, symbol in enumerate(target_instruments, 1):
         try:
-            if symbol == "ETHUSDT":
+            if symbol == "ETHUSDT" or symbol == "BTCUSDT":
                 continue
 
             print(f"[{i}/{len(target_instruments)}] Processing instrument: {symbol}")
@@ -46,6 +46,7 @@ def data_resampling(
             alt_merged_df = pl.read_parquet(
                 merged_file_template.format(symbol=symbol)
             )
+            alt_merged_df = to_microseconds(alt_merged_df, "timestamp")
             alt_merged_df = alt_factors_cal(alt_merged_df)
 
             alt_df = alt_merged_df.with_columns(
@@ -56,7 +57,10 @@ def data_resampling(
                 for date in tqdm(dates_list, desc=f"{symbol} resampling"):
                     agg_trade_df = pl.scan_parquet(agg_trade_file_template.format(symbol=symbol, date=date))
 
-                    cols = [col_agg_trade for col_agg_trade in agg_trade_df.collect_schema().names() if col_agg_trade != '']
+                    cols = [
+                        col_agg_trade for col_agg_trade in agg_trade_df.collect_schema().names() if col_agg_trade != ''
+                    ]
+
                     cols_to_cast = [c for c in cols if c not in ["is_buyer_maker"]]
                     agg_trade_df = (
                         agg_trade_df
@@ -72,6 +76,9 @@ def data_resampling(
                         ])
                         .collect()
                     )
+                    if check_timestamp_unit(agg_trade_df) != "us":
+                        print(f"{symbol} not converted to US timestamp")
+                        break
 
                     ts_min = agg_trade_df['timestamp'].min() - 1 * 1000 * 1000
                     ts_max = agg_trade_df['timestamp'].max()
@@ -82,8 +89,8 @@ def data_resampling(
                     )
 
                     if daily_df.is_empty():
+                        print("Daily data is empty")
                         continue
-
 
                     feat_merged_df = merge_dataframes_on_timestamp(
                         [agg_trade_df, alt_df],
@@ -216,6 +223,17 @@ if __name__ == "__main__":
         symbols_list = json.load(f)
 
     symbols_list_usdt = [s if s.endswith("T") else s + "T" for s in symbols_list]
+
+    symbols_list_usdt = ["ETHUSDT"]
+    data_resampling(
+        start_date="2024-07-01",
+        end_date="2025-08-31",
+        threshold=0.0067,
+        output_dir=OUTPUT_DIR,
+        target_instruments=symbols_list_usdt,
+        resample=True,
+    )
+
     symbols_list_usdt = ["BTCUSDT"]
     data_resampling(
         start_date="2024-07-01",
@@ -234,15 +252,7 @@ if __name__ == "__main__":
         target_instruments=symbols_list_usdt,
         resample=True,
     )
-    symbols_list_usdt = ["ETHUSDT"]
-    data_resampling(
-        start_date="2024-07-01",
-        end_date="2025-08-31",
-        threshold=0.0067,
-        output_dir=OUTPUT_DIR,
-        target_instruments=symbols_list_usdt,
-        resample=True,
-    )
+
     #
     # df = pl.read_parquet("../data_proc/resampled_data/BNBUSDT/resampled_data_BNBUSDT_2025-07-31_thr0.0067.parquet")
     # print(df)

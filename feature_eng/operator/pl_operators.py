@@ -272,3 +272,37 @@ def auto_fill_dataframes_with_old_data(auto_fill_df: pl.DataFrame) -> pl.DataFra
 
     return auto_fill_df
 
+
+def check_timestamp_unit(df: pl.DataFrame, col: str = "timestamp") -> str:
+    if col not in df.columns:
+        raise ValueError(f"{col} not in DataFrame")
+
+    ts = df[col].drop_nulls().to_numpy()[0]
+
+    if ts > 1e15:
+        return "us"
+    elif ts > 1e12:
+        return "ms"
+    elif ts > 1e9:
+        return "s"
+    else:
+        return "unknown"
+
+def to_microseconds(df: pl.DataFrame, col: str = "timestamp") -> pl.DataFrame:
+    if col not in df.columns:
+        raise ValueError(f"{col} not in DataFrame")
+
+    ts = df[col].drop_nulls().to_numpy()[0]
+
+    if ts > 1e15:
+        factor = 1
+    elif ts > 1e12:
+        factor = 1_000
+    elif ts > 1e9:
+        factor = 1_000_000
+    else:
+        raise ValueError(f"Unrecognized timestamp scale for value {ts}")
+
+    return df.with_columns(
+        (pl.col(col) * factor).alias(col)
+    )

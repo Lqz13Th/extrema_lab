@@ -83,6 +83,10 @@ def process_symbol(base_dir, output_dir, symbol: str):
     funding_df = read_all_parquets(funding_folder, "funding_", time_col="calc_time")
     premium_df = read_all_parquets(premium_folder, "premium_", time_col="open_time")
 
+    metric_df = to_microseconds(metric_df, "timestamp")
+    funding_df = to_microseconds(funding_df, "timestamp")
+    premium_df = to_microseconds(premium_df, "timestamp")
+
     merged = merge_dataframes_on_timestamp(
         [metric_df, funding_df, premium_df],
         prefixes=["oi_", "funding_", "premium_"]

@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     symbols_list = ["BTCUSD", "ETHUSD"]
     start_date_str = "2024-07-01"
-    end_date_str = "2025-08-31"
+    end_date_str = "2025-09-02"
     concurrency_numbs = 100
 
     # download USD metrics
@@ -220,47 +220,47 @@ if __name__ == "__main__":
         concurrency=concurrency_numbs,
     ))
 
-
-    symbols_list_usdt = [s + "T" for s in symbols_list]
-
-    # download funding rates
-    asyncio.run(download_binance_data_async(
-        symbols=symbols_list_usdt,
-        market=FuturesMarket.UM,
-        data_type=DataType.FUNDING_RATE,
-        freq=Frequency.MONTHLY,
-        start_date=start_date_str,
-        end_date=end_date_str,
-        output_dir="./binance_data/funding_rates",
-        kline_period=None,
-        concurrency=concurrency_numbs,
-    ))
-
-    # download premium index klines
-    asyncio.run(download_binance_data_async(
-        symbols=symbols_list_usdt,
-        market=FuturesMarket.UM,
-        data_type=DataType.PREMIUM_INDEX_KLINES,
-        freq=Frequency.MONTHLY,
-        start_date=start_date_str,
-        end_date=end_date_str,
-        output_dir="./binance_data/premium_index_klines",
-        kline_period='5m',
-        concurrency=concurrency_numbs,
-    ))
-
-    # download aggregate trades
-    asyncio.run(download_binance_data_async(
-        symbols=symbols_list_usdt,
-        market=FuturesMarket.UM,
-        data_type=DataType.AGG_TRADES,
-        freq=Frequency.DAILY,
-        start_date=start_date_str,
-        end_date=end_date_str,
-        output_dir="./binance_data/aggregate_trades",
-        kline_period=None,
-        concurrency=concurrency_numbs,
-    ))
+    #
+    # symbols_list_usdt = [s + "T" for s in symbols_list]
+    #
+    # # download funding rates
+    # asyncio.run(download_binance_data_async(
+    #     symbols=symbols_list_usdt,
+    #     market=FuturesMarket.UM,
+    #     data_type=DataType.FUNDING_RATE,
+    #     freq=Frequency.MONTHLY,
+    #     start_date=start_date_str,
+    #     end_date=end_date_str,
+    #     output_dir="./binance_data/funding_rates",
+    #     kline_period=None,
+    #     concurrency=concurrency_numbs,
+    # ))
+    #
+    # # download premium index klines
+    # asyncio.run(download_binance_data_async(
+    #     symbols=symbols_list_usdt,
+    #     market=FuturesMarket.UM,
+    #     data_type=DataType.PREMIUM_INDEX_KLINES,
+    #     freq=Frequency.MONTHLY,
+    #     start_date=start_date_str,
+    #     end_date=end_date_str,
+    #     output_dir="./binance_data/premium_index_klines",
+    #     kline_period='5m',
+    #     concurrency=concurrency_numbs,
+    # ))
+    #
+    # # download aggregate trades
+    # asyncio.run(download_binance_data_async(
+    #     symbols=symbols_list_usdt,
+    #     market=FuturesMarket.UM,
+    #     data_type=DataType.AGG_TRADES,
+    #     freq=Frequency.DAILY,
+    #     start_date=start_date_str,
+    #     end_date=end_date_str,
+    #     output_dir="./binance_data/aggregate_trades",
+    #     kline_period=None,
+    #     concurrency=concurrency_numbs,
+    # ))
 
     # # download binance option volatility index
     # asyncio.run(download_binance_data_async(

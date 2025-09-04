@@ -56,3 +56,14 @@ if __name__ == "__main__":
         df = pl.read_parquet(file_path)
         df = alt_factors_cal(df)
 
+        if um_symbol == "ETHUSDT":
+            print(df)
+            df = pl.read_parquet(file_path)
+
+            # 生成每列唯一值数量
+            unique_counts = {col: df[col].n_unique() for col in df.columns}
+
+            # 打印结果，每列是否只有一个唯一值
+            for col, count in unique_counts.items():
+                print(f"{col}: n_unique={count}, only_one_unique={count == 1}")
+
